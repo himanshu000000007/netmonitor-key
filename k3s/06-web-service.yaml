@@ -1,0 +1,17 @@
+# Service - NodePort type use kiya hai taaki server ke IP + ek fixed port
+# (30080) se bahar se access ho sake. Ye Docker Compose ke port 80 se
+# takrayega nahi kyunki alag port hai - dono stacks (Compose aur k3s) ek
+# saath demo ke liye chal sakte hain.
+apiVersion: v1
+kind: Service
+metadata:
+  name: netmonitor-web
+  namespace: netmonitor
+spec:
+  selector:
+    app: netmonitor-web
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 30080
+  type: NodePort

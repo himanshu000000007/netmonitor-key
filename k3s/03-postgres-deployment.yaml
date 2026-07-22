@@ -1,0 +1,39 @@
+# Deployment - Kubernetes ka basic unit jo batata hai "kitne pods chahiye,
+# kaunsi image, kya config" - agar pod crash ho jaaye, Kubernetes khud
+# naya bana deta hai (self-healing), Docker Compose isme automatic nahi karta.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: netmonitor
+spec:
+  replicas: 1   # database ke liye 1 hi rakhte hain - multiple Postgres replicas ke liye alag setup chahiye hota hai
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "netadmin", "-d", "netmonitor"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc

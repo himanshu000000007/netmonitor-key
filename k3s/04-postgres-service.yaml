@@ -1,0 +1,15 @@
+# Service - Deployment ko ek stable naam deta hai jisse doosre pods use
+# access kar sakein. Pod restart hone par IP badalta hai, lekin Service ka
+# naam (dns: postgres.netmonitor.svc.cluster.local) hamesha same rehta hai.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: netmonitor
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP   # sirf cluster ke andar accessible, bahar se nahi (database public nahi hona chahiye)

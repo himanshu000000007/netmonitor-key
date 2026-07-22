@@ -1,0 +1,14 @@
+# PVC - Postgres ka data pod restart/crash hone par bhi safe rahe, isliye
+# persistent storage mangwate hain. k3s ka default storage class ise
+# automatically local disk se satisfy kar deta hai.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: netmonitor
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
