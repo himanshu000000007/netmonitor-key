@@ -17,6 +17,7 @@ services:
 
   web:
     build: ./app
+    image: himanshubhuakr545/netmonitor-web:latest
     container_name: netmonitor-web
     restart: unless-stopped
     ports:
