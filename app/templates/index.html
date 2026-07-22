@@ -18,8 +18,17 @@
 
     <form action="/" method="GET" class="search-form">
         <input type="text" name="search" placeholder="Search by name or type..." value="{{ search or '' }}">
+        <select name="type_filter">
+            <option value="">All Types</option>
+            <option value="Ubiquiti airOS" {% if type_filter == "Ubiquiti airOS" %}selected{% endif %}>Ubiquiti airOS</option>
+            <option value="Mimosa" {% if type_filter == "Mimosa" %}selected{% endif %}>Mimosa</option>
+            <option value="Cambium ePMP" {% if type_filter == "Cambium ePMP" %}selected{% endif %}>Cambium ePMP</option>
+            <option value="Router" {% if type_filter == "Router" %}selected{% endif %}>Router</option>
+            <option value="Switch" {% if type_filter == "Switch" %}selected{% endif %}>Switch</option>
+            <option value="Server" {% if type_filter == "Server" %}selected{% endif %}>Server</option>
+        </select>
         <button type="submit">Search</button>
-        {% if search %}<a href="/">Clear</a>{% endif %}
+        {% if search or type_filter %}<a href="/">Clear</a>{% endif %}
     </form>
 
     <form action="/add" method="POST" class="device-form">

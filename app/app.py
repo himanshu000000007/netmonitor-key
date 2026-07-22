@@ -77,15 +77,24 @@ def ping_host(ip_address):
 @app.route("/")
 def index():
     search = request.args.get("search", "").strip()
+    type_filter = request.args.get("type_filter", "").strip()
+
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    query = "SELECT * FROM devices WHERE 1=1"
+    params = []
+
     if search:
-        cur.execute(
-            "SELECT * FROM devices WHERE name ILIKE %s OR device_type ILIKE %s ORDER BY id DESC",
-            (f"%{search}%", f"%{search}%"),
-        )
-    else:
-        cur.execute("SELECT * FROM devices ORDER BY id DESC")
+        query += " AND (name ILIKE %s OR device_type ILIKE %s)"
+        params.extend([f"%{search}%", f"%{search}%"])
+
+    if type_filter:
+        query += " AND device_type = %s"
+        params.append(type_filter)
+
+    query += " ORDER BY id DESC"
+    cur.execute(query, params)
     devices = cur.fetchall()
     cur.close()
     conn.close()
@@ -97,6 +106,7 @@ def index():
         "index.html",
         devices=devices,
         search=search,
+        type_filter=type_filter,
         total=len(devices),
         up_count=up_count,
         down_count=down_count,
