@@ -26,6 +26,14 @@ resource "aws_security_group" "netmonitor_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "Prometheus UI - Phase 3 ke liye"
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     description = "Sab outbound allowed"
     from_port   = 0

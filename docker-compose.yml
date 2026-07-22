@@ -31,5 +31,49 @@ services:
       db:
         condition: service_healthy
 
+  # Container-level CPU/RAM metrics collect karta hai - Prometheus ise scrape karega
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: netmonitor-cadvisor
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - "8081:8080"
+
+  # Metrics collect + store karta hai app aur containers dono se
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: netmonitor-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - web
+      - cadvisor
+
+  # Dashboards - Prometheus ke data ko graphs mein dikhayega
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: netmonitor-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
 volumes:
   postgres_data:
+  prometheus_data:
+  grafana_data:

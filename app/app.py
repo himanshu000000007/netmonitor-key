@@ -1,12 +1,18 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
 import psycopg2
 import psycopg2.extras
 import os
 import subprocess
 import platform
 import time
+from prometheus_client import Gauge, generate_latest, CONTENT_TYPE_LATEST
 
 app = Flask(__name__)
+
+# Prometheus Gauges - ye labels ke saath device counts track karenge
+DEVICES_UP = Gauge("netmonitor_devices_up", "Number of devices currently up")
+DEVICES_DOWN = Gauge("netmonitor_devices_down", "Number of devices currently down")
+DEVICES_TOTAL = Gauge("netmonitor_devices_total", "Total number of devices being monitored")
 
 DB_HOST = os.environ.get("DB_HOST", "localhost")
 DB_NAME = os.environ.get("DB_NAME", "netmonitor")
@@ -184,6 +190,28 @@ def api_metrics():
 @app.route("/health")
 def health():
     return {"status": "ok"}, 200
+
+
+@app.route("/metrics")
+def metrics():
+    """Prometheus is endpoint ko periodically scrape karega."""
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute("SELECT status, COUNT(*) as count FROM devices GROUP BY status")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    counts = {row["status"]: row["count"] for row in rows}
+    up = counts.get("up", 0)
+    down = counts.get("down", 0)
+    total = up + down + counts.get("unknown", 0)
+
+    DEVICES_UP.set(up)
+    DEVICES_DOWN.set(down)
+    DEVICES_TOTAL.set(total)
+
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
 
 init_db()

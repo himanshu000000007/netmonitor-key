@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s   # har 15 sec mein metrics collect karega
+
+scrape_configs:
+  # Apni Flask app ke metrics scrape karo
+  - job_name: "netmonitor-app"
+    static_configs:
+      - targets: ["web:5000"]
+
+  # Prometheus khud ke health metrics
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # cAdvisor - Docker containers ke resource usage (CPU/RAM) ke liye
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
