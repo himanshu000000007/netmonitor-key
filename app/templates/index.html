@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Network Device Monitor</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1>Network Device Monitoring Dashboard</h1>
+
+    <div class="stats">
+        <div class="stat-box total">Total: {{ total }}</div>
+        <div class="stat-box up">Up: {{ up_count }}</div>
+        <div class="stat-box down">Down: {{ down_count }}</div>
+        <a href="/check-all" class="check-all-btn">Ping All Devices</a>
+    </div>
+
+    <form action="/" method="GET" class="search-form">
+        <input type="text" name="search" placeholder="Search by name or type..." value="{{ search or '' }}">
+        <button type="submit">Search</button>
+        {% if search %}<a href="/">Clear</a>{% endif %}
+    </form>
+
+    <form action="/add" method="POST" class="device-form">
+        <input type="text" name="name" placeholder="Device Name" required>
+        <input type="text" name="ip_address" placeholder="IP Address" required>
+        <select name="device_type" required>
+            <option value="">Device Type</option>
+            <option value="Ubiquiti airOS">Ubiquiti airOS</option>
+            <option value="Mimosa">Mimosa</option>
+            <option value="Cambium ePMP">Cambium ePMP</option>
+            <option value="Router">Router</option>
+            <option value="Switch">Switch</option>
+            <option value="Server">Server</option>
+        </select>
+        <input type="text" name="location" placeholder="Location (optional)">
+        <button type="submit">Add Device</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>IP Address</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Last Checked</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in devices %}
+            <tr>
+                <td>{{ d['id'] }}</td>
+                <td>{{ d['name'] }}</td>
+                <td>{{ d['ip_address'] }}</td>
+                <td>{{ d['device_type'] }}</td>
+                <td>{{ d['location'] or '-' }}</td>
+                <td><span class="badge {{ d['status'] }}">{{ d['status'] }}</span></td>
+                <td>{{ d['last_checked'] }}</td>
+                <td>
+                    <a href="/check/{{ d['id'] }}">Ping</a> |
+                    <a href="/delete/{{ d['id'] }}" onclick="return confirm('Delete this device?')">Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8">No devices added yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: netmonitor-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: netmonitor
+      POSTGRES_USER: netadmin
+      POSTGRES_PASSWORD: netpass123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U netadmin -d netmonitor"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: ./app
+    container_name: netmonitor-web
+    restart: unless-stopped
+    ports:
+      - "80:5000"
+    environment:
+      DB_HOST: db
+      DB_NAME: netmonitor
+      DB_USER: netadmin
+      DB_PASSWORD: netpass123
+      DB_PORT: 5432
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

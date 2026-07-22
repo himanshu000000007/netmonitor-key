@@ -1,0 +1,5 @@
+# Ye file copy karke naam do: terraform.tfvars
+# (terraform.tfvars .gitignore mein hai isliye commit nahi hogi - apna real data yahan daalo)
+
+key_pair_name = "employee-app-key"     # AWS Console > EC2 > Key Pairs mein jo naam dikh raha ho
+my_ip         = "1.2.3.4/32"           # apna public IP daalo - https://ifconfig.me se pata chalega
